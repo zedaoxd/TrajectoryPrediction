@@ -7,6 +7,7 @@ using UnityEngine;
 public class RbForceAccumulator1 : MonoBehaviour
 {
     [SerializeField] private Vector2 force;
+    [SerializeField] private float torque;
     [SerializeField] private ForceMode2D mode;
 
     private Rigidbody2D rb;
@@ -19,12 +20,17 @@ public class RbForceAccumulator1 : MonoBehaviour
     private void FixedUpdate()
     {
         rb.AddForce(force, mode);
-        //so aplicamos força todo update se a força for gradual
-        enabled = mode == ForceMode2D.Force;
+        rb.AddTorque(torque, mode);
+        RefreshEnableState();
     }
 
     private void OnValidate()
     {
         enabled = true;
+    }
+    
+    private void RefreshEnableState()
+    {
+        enabled = mode == ForceMode2D.Force;
     }
 }

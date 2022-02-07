@@ -31,9 +31,9 @@ public class PhysicsWorld2D : MonoBehaviour
             var dv = (rb.NetForce * rb.InverseMass * dt) + (rb.InstantNetForce * rb.InverseMass);
             rb.Velocity = (rb.Velocity + dv) * (1 - rb.LinearDrag * dt);
             rb.Position += rb.Velocity * dt;
-
-            // rotation
-            var dw = rb.angularAcceleration * dt;
+            
+            // torque
+            var dw = (rb.NetTorque * rb.InverseMomentOfInercia * dt) + rb.InstantNetTorque * rb.InverseMomentOfInercia;
             rb.angularVelocity = (rb.angularVelocity - dw) * (1 - dt * rb.angularDrag);
             rb.Orientation += rb.angularVelocity * dt;
             

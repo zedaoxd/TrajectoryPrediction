@@ -13,6 +13,7 @@ public enum SimpleForceMode
     VelocityChange, //Aplica toda força de uma vez, independente da massa (tudo vira mudança de velocidade)
 }
 
+[RequireComponent(typeof(Shape2D))]
 public class SimpleRigidboody2D : MonoBehaviour
 {
     // posicao, velocidade, aceleracao
@@ -23,15 +24,12 @@ public class SimpleRigidboody2D : MonoBehaviour
     }
 
     private PhysicsWorld2D physicsWorld;
-
     public Vector2 Velocity;
-    [SerializeField] private float mass = 1f;
-    
     [Min(0)] public float LinearDrag;
-    
     public Vector2 NetForce { get; private set; }
     public Vector2 InstantNetForce { get; private set; }
-    public float InverseMass { get; private set; }
+    public float NetTorque { get; private set; }
+    public float InstantNetTorque { get; private set; }
 
     public float Orientation
     {
@@ -43,6 +41,12 @@ public class SimpleRigidboody2D : MonoBehaviour
             transform.rotation = Quaternion.Euler(rot);
         }
     }
+
+    private Shape2D Shape => GetComponent<Shape2D>();
+    public float InverseMass => Shape.InverseMass;
+    public float mass => Shape.Mass;
+    public float InverseMomentOfInercia => Shape.InverseMomentOfInertia;
+    public float MomentOfInertia => Shape.MomentOfInertia;
     
     [Space]
     [Header("Rotations")]
@@ -52,7 +56,6 @@ public class SimpleRigidboody2D : MonoBehaviour
 
     private void Awake()
     {
-        UpdateInverseMass();
         // TODO: PhysicsWorld2D deve ser um singleton
         physicsWorld = FindObjectOfType<PhysicsWorld2D>();
         physicsWorld.Register(this);
@@ -66,20 +69,10 @@ public class SimpleRigidboody2D : MonoBehaviour
         }
     }
 
-    private void OnValidate()
-    {
-        UpdateInverseMass();
-    }
-
-    private void UpdateInverseMass()
-    {
-        Assert.IsFalse(Mathf.Approximately(mass, 0), "unsuport mass 0");
-        InverseMass = Mathf.Approximately(mass, 0) ? 0 : 1.0f / mass;
-    }
-
     public void ResetForces()
     {
         NetForce = InstantNetForce = Vector2.zero;
+        NetTorque = InstantNetTorque = 0.0f;
     }
 
     public void AddForce(Vector2 force, SimpleForceMode mode)
@@ -97,6 +90,27 @@ public class SimpleRigidboody2D : MonoBehaviour
                 break;
             case SimpleForceMode.VelocityChange:
                 InstantNetForce += (force * mass);
+                break;
+            default:
+                throw new NotImplementedException($"Modo não implementado {mode}");
+        }
+    }
+
+    public void AddTorque(float torque, SimpleForceMode mode)
+    {
+        switch (mode)
+        {
+            case SimpleForceMode.Force:
+                NetTorque += torque;
+                break;
+            case SimpleForceMode.Impulse:
+                InstantNetTorque += torque;
+                break;
+            case SimpleForceMode.Acceleration:
+                NetTorque += (torque * MomentOfInertia);
+                break;
+            case SimpleForceMode.VelocityChange:
+                InstantNetTorque += (torque * MomentOfInertia);
                 break;
             default:
                 throw new NotImplementedException($"Modo não implementado {mode}");
