@@ -97,8 +97,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2e4be56287249644856dce4615245b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Velocity: {x: 15, y: 0}
-  Acceleration: {x: 0, y: 0}
+  Velocity: {x: 0, y: 0}
+  mass: 1
+  LinearDrag: 0
+  angularVelocity: 0
+  angularAcceleration: 0
+  angularDrag: 0
 --- !u!114 &-5568604503786336367
 MonoBehaviour:
   m_ObjectHideFlags: 0

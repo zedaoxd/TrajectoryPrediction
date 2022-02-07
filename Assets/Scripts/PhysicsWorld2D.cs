@@ -28,11 +28,16 @@ public class PhysicsWorld2D : MonoBehaviour
         // simular todos os rigid bodies (fase de Dynamics)
         foreach (var rb in rbs)
         {
-            // simula
-            // v = v + a.dt
-            // p = p + v.dt
-            rb.Velocity += rb.Acceleration * dt;
+            var dv = (rb.NetForce * rb.InverseMass * dt) + (rb.InstantNetForce * rb.InverseMass);
+            rb.Velocity = (rb.Velocity + dv) * (1 - rb.LinearDrag * dt);
             rb.Position += rb.Velocity * dt;
+
+            // rotation
+            var dw = rb.angularAcceleration * dt;
+            rb.angularVelocity = (rb.angularVelocity - dw) * (1 - dt * rb.angularDrag);
+            rb.Orientation += rb.angularVelocity * dt;
+            
+            rb.ResetForces();
         }
     }
 }
